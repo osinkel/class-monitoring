@@ -27,7 +27,7 @@ class Group(models.Model):
 
 
 class Faculty(models.Model):
-    groups = models.ForeignKey(Group, on_delete=models.CASCADE)
+    groups = models.ManyToManyField(Group)
     name = models.CharField('название', max_length=255)
 
     def __str__(self):
@@ -35,7 +35,7 @@ class Faculty(models.Model):
 
 
 class University(models.Model):
-    faculties = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    faculties = models.ManyToManyField(Faculty)
     name = models.CharField('название', max_length=255)
 
     def __str__(self):
@@ -99,7 +99,7 @@ class Subject(models.Model):
     type = models.ForeignKey(SubjectType, on_delete=models.CASCADE)
     time = models.ForeignKey(SubjectTime, on_delete=models.CASCADE)
     date = models.DateField('дата')
-    groups = models.ManyToManyField(Group)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['-date', 'time']
@@ -109,8 +109,8 @@ class Subject(models.Model):
 
 
 class StudentAttendance(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.Model)
-    student = models.ForeignKey(User, on_delete=models.Model)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
     presence = models.BooleanField('присутствие')
 
     class Meta:
@@ -118,16 +118,3 @@ class StudentAttendance(models.Model):
 
     def __str__(self):
         return self.presence
-
-
-
-
-
-
-
-
-
-
-
-
-
