@@ -12,6 +12,9 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(choices=AllowedRoles.choices, max_length=20)
 
+    def __str__(self):
+        return self.user.name
+
 
 class Group(models.Model):
     name = models.CharField('название', max_length=255)
@@ -19,23 +22,35 @@ class Group(models.Model):
     class Meta:
         ordering = ['name']
 
+    def __str__(self):
+        return self.name
+
 
 class Faculty(models.Model):
     groups = models.ForeignKey(Group, on_delete=models.CASCADE)
     name = models.CharField('название', max_length=255)
+
+    def __str__(self):
+        return self.name
 
 
 class University(models.Model):
     faculties = models.ForeignKey(Faculty, on_delete=models.CASCADE)
     name = models.CharField('название', max_length=255)
 
+    def __str__(self):
+        return self.name
+
 
 class Timetable(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    date = models.DateTimeField('Дата занятия')
+    date = models.DateTimeField('дата')
 
     class Meta:
         ordering = ['-date']
+
+    def __str__(self):
+        return self.group
 
 
 class Lecturer(models.Model):
@@ -45,6 +60,9 @@ class Lecturer(models.Model):
     class Meta:
         ordering = ['last_name', 'first_name']
 
+    def __str__(self):
+        return self.last_name
+
 
 class SubjectName(models.Model):
     name = models.CharField('предмет', max_length=255)
@@ -53,10 +71,16 @@ class SubjectName(models.Model):
     class Meta:
         ordering = ['name']
 
+    def __str__(self):
+        return self.name
+
 
 class SubjectType(models.Model):
     university = models.ForeignKey(University, on_delete=models.CASCADE)
     name = models.CharField('название', max_length=20)
+
+    def __str__(self):
+        return self.name
 
 
 class SubjectTime(models.Model):
@@ -65,6 +89,9 @@ class SubjectTime(models.Model):
 
     class Meta:
         ordering = ['university', 'time']
+
+    def __str__(self):
+        return self.time
 
 
 class Subject(models.Model):
@@ -77,6 +104,9 @@ class Subject(models.Model):
     class Meta:
         ordering = ['-date', 'time']
 
+    def __str__(self):
+        return self.date
+
 
 class StudentAttendance(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.Model)
@@ -85,6 +115,9 @@ class StudentAttendance(models.Model):
 
     class Meta:
         ordering = ['student', 'subject']
+
+    def __str__(self):
+        return self.presence
 
 
 
