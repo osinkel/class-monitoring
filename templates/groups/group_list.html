@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Group's list of user faculty{% endblock %}
+
+{% block content %}
+<h3>Группы</h3>
+{%for group in group_list%}
+    <a href="{{group.id}}">{{group.name}}</a>
+    <br>
+{%endfor%}
+{% endblock %}

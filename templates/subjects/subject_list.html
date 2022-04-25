@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Subject's list of user{% endblock %}
+
+{% block content %}
+<h3>Предметы</h3>
+{%for subject in subject_list%}
+    <a href="{{subject.id}}">{{subject.name}}</a>
+    <br>
+{%endfor%}
+{% endblock %}

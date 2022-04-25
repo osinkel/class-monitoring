@@ -3,17 +3,17 @@ from django.contrib.auth.models import User
 
 
 class AllowedRoles(models.TextChoices):
+    """All possible roles in system.
+    STUDENT is ordinary student of some university. View only his classes.
+    PRESIDENT is the head of the student group. His task is to mark the presence of students.
+    LECUTRER is teacher. He can view the students' presence on his classes.
+    OTHER - people, who do not belong to any of the previous groups, for example,
+    dean, deputy dean or head teacher etc."""
+
     STUDENT = 'student'
+    PRESIDENT = 'president'
     LECTURER = 'lecturer'
     OTHER = 'other'
-
-
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    role = models.CharField(choices=AllowedRoles.choices, max_length=20)
-
-    def __str__(self):
-        return self.user.name
 
 
 class Group(models.Model):
@@ -42,6 +42,17 @@ class University(models.Model):
         return self.name
 
 
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.CharField(choices=AllowedRoles.choices, max_length=20)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    university = models.ForeignKey(University, on_delete=models.CASCADE)
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.user)
+
+
 class Timetable(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     date = models.DateTimeField('дата')
@@ -66,7 +77,7 @@ class Lecturer(models.Model):
 
 class SubjectName(models.Model):
     name = models.CharField('предмет', max_length=255)
-    duration = models.SmallIntegerField('количество часов')
+    groups = models.ManyToManyField(Group)
 
     class Meta:
         ordering = ['name']
@@ -91,7 +102,7 @@ class SubjectTime(models.Model):
         ordering = ['university', 'time']
 
     def __str__(self):
-        return self.time
+        return str(self.time)
 
 
 class Subject(models.Model):
@@ -105,7 +116,7 @@ class Subject(models.Model):
         ordering = ['-date', 'time']
 
     def __str__(self):
-        return self.date
+        return f"{str(self.name)}, {self.time}, {str(self.date)}"
 
 
 class StudentAttendance(models.Model):
