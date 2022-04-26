@@ -49,19 +49,22 @@ class Profile(models.Model):
     university = models.ForeignKey(University, on_delete=models.CASCADE)
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
 
+    class Meta:
+        ordering = ['user__last_name']
+
     def __str__(self):
         return str(self.user)
 
 
 class Timetable(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    date = models.DateTimeField('дата')
+    date = models.DateField('дата')
 
     class Meta:
         ordering = ['-date']
 
     def __str__(self):
-        return self.group
+        return str(self.group)+', '+str(self.date)
 
 
 class Lecturer(models.Model):
@@ -76,7 +79,8 @@ class Lecturer(models.Model):
 
 
 class SubjectName(models.Model):
-    name = models.CharField('предмет', max_length=255)
+    name = models.CharField('название', max_length=255)
+    short_name = models.CharField('сокращенное название', max_length=50)
     groups = models.ManyToManyField(Group)
 
     class Meta:
@@ -105,10 +109,23 @@ class SubjectTime(models.Model):
         return str(self.time)
 
 
+class StudentAttendance(models.Model):
+    student = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    is_good_cause = models.BooleanField('уважительная причина', default=False)
+    cause = models.CharField('причина', max_length=255, default='прогул')
+
+    class Meta:
+        ordering = ['subject']
+
+    def __str__(self):
+        return str(self.student)+', '+str(self.cause)
+
+
 class Subject(models.Model):
     name = models.ForeignKey(SubjectName, on_delete=models.CASCADE)
     type = models.ForeignKey(SubjectType, on_delete=models.CASCADE)
     time = models.ForeignKey(SubjectTime, on_delete=models.CASCADE)
+    absences = models.ManyToManyField(StudentAttendance)
     date = models.DateField('дата')
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
@@ -117,15 +134,3 @@ class Subject(models.Model):
 
     def __str__(self):
         return f"{str(self.name)}, {self.time}, {str(self.date)}"
-
-
-class StudentAttendance(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    student = models.ForeignKey(User, on_delete=models.CASCADE)
-    presence = models.BooleanField('присутствие')
-
-    class Meta:
-        ordering = ['student', 'subject']
-
-    def __str__(self):
-        return self.presence

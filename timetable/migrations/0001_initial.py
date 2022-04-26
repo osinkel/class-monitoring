@@ -46,7 +46,8 @@ class Migration(migrations.Migration):
             name='SubjectName',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, verbose_name='предмет')),
+                ('name', models.CharField(max_length=255, verbose_name='название')),
+                ('short_name', models.CharField(max_length=50, verbose_name='сокращенное название')),
                 ('duration', models.SmallIntegerField(verbose_name='количество часов')),
             ],
             options={
@@ -65,7 +66,7 @@ class Migration(migrations.Migration):
             name='Timetable',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateTimeField(verbose_name='дата')),
+                ('date', models.DateField(verbose_name='дата')),
                 ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.group')),
             ],
             options={
@@ -100,6 +101,7 @@ class Migration(migrations.Migration):
                 ('name', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.subjectname')),
                 ('time', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.subjecttime')),
                 ('type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.subjecttype')),
+                ('absences', models.ManyToManyField(to='timetable.studentattendance')),
             ],
             options={
                 'ordering': ['-date', 'time'],
@@ -109,12 +111,13 @@ class Migration(migrations.Migration):
             name='StudentAttendance',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('presence', models.BooleanField(verbose_name='присутствие')),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('subject', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.subject')),
+                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.profile')),
+                ('cause', models.CharField(default='прогул', max_length=255, verbose_name='причина')),
+                ('is_good_cause', models.BooleanField(default=False, verbose_name='уважительная причина')),
+
             ],
             options={
-                'ordering': ['student', 'subject'],
+                'ordering': ['subject'],
             },
         ),
         migrations.CreateModel(
@@ -124,6 +127,9 @@ class Migration(migrations.Migration):
                 ('role', models.CharField(choices=[('student', 'Student'), ('lecturer', 'Lecturer'), ('other', 'Other')], max_length=20)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
+            options={
+                'ordering': ['user__last_name'],
+            },
         ),
         migrations.AddField(
             model_name='faculty',

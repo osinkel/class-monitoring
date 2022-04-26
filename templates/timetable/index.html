@@ -1,7 +1,48 @@
 {% extends "base.html" %}
 
-{% block title %}Main timetable{% endblock %}
+{% block title %}User group attendance{% endblock %}
 
 {% block content %}
-<h3>Hello, world!</h3>
+<h3>Посещаемость</h3>
+
+<table border="1" cellpadding="4" cellspacing="0">
+    <tr>
+        <td>Дни недели</td>
+        {% for name in days_name%}
+        <td colspan="{{max_classes_in_day}}">{{name}}</td>
+        {% endfor %}
+   </tr>
+    <tr>
+        <td>Дата</td>
+        {% for day in days %}
+        <td colspan="{{max_classes_in_day}}">{{day}}</td>
+        {% endfor %}
+    </tr>
+    <tr>
+        <td>Форма занятий</td>
+        {% for subject in subjects %}
+        <td>{{subject.type.name}}</td>
+        {% endfor %}
+    </tr>
+    <tr>
+        <td>Студент/Название</td>
+        {% for subject in subjects %}
+        <td><SPAN STYLE="writing-mode: vertical-lr;
+                     -ms-writing-mode: tb-rl;
+                     transform: rotate(180deg);">{{subject.name.short_name}}</SPAN></td>
+        {% endfor %}
+   </tr>
+    {% for all_students_presence in attendance %}
+    <tr>
+        {% for student_presence in all_students_presence %}
+        <td>{{student_presence}}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+{% endblock %}
+
+{% block script %}
+    {% load static %}
+    <script src="{% static 'js/timetable.js' %}"></script>
 {% endblock %}
