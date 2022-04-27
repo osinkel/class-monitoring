@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Students of group{% endblock %}
+
+{% block content %}
+<h3>Группа {{object.name}}</h3>
+<h4>Список студентов:</h4>
+{%for student in students%}
+    <p>{{student.user.last_name}} {{student.user.first_name}}</p>
+{%endfor%}
+{% endblock %}

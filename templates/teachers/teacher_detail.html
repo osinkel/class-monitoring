@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Subjects of Teacher{% endblock %}
+
+{% block content %}
+<h3>Преподаватель {{object.user.last_name}} {{object.user.first_name}}</h3>
+{%for teacher_subject in teacher_subjects%}
+    <a href="{% url 'timetable:timetable_detail' teacher_subject.timetable.id%}">{{teacher_subject.date}} {{teacher_subject.time}} {{teacher_subject.name}}</a>
+    <br>
+{%endfor%}
+{% endblock %}

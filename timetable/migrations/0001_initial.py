@@ -101,7 +101,9 @@ class Migration(migrations.Migration):
                 ('name', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.subjectname')),
                 ('time', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.subjecttime')),
                 ('type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.subjecttype')),
+                ('teacher', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.profile')),
                 ('absences', models.ManyToManyField(to='timetable.studentattendance')),
+                ('timetable', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='timetable.timetable')),
             ],
             options={
                 'ordering': ['-date', 'time'],

@@ -127,7 +127,9 @@ class Subject(models.Model):
     time = models.ForeignKey(SubjectTime, on_delete=models.CASCADE)
     absences = models.ManyToManyField(StudentAttendance)
     date = models.DateField('дата')
+    teacher = models.ForeignKey(Profile, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    timetable = models.ForeignKey(Timetable, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['-date', 'time']
