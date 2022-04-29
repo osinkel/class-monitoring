@@ -15,10 +15,6 @@ def get_subjects_name_of_user(user: User) -> set:
     return {subject.name for subject in all_user_subject}
 
 
-def get_all_subjects_name() -> set:
-    return SubjectName.objects.all()
-
-
 def get_subject_of_user(user: User, subject_name: SubjectName) -> list:
     current_profile = get_profile(user)
     return Subject.objects.filter(group=current_profile.group, name=subject_name)
@@ -29,17 +25,9 @@ def get_teachers_user_university(user: User) -> list:
     return Profile.objects.filter(role=AllowedRoles.LECTURER, university=current_profile.university)
 
 
-def get_all_teachers() -> list:
-    return Profile.objects.filter(role=AllowedRoles.LECTURER)
-
-
 def get_groups_user_faculty(user: User) -> list:
     current_profile = get_profile(user)
     return current_profile.faculty.groups.all()
-
-
-def get_all_groups() -> list:
-    return Group.objects.all()
 
 
 def get_students_user_group(user) -> list:

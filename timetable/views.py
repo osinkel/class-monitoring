@@ -1,12 +1,10 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import generic
 from timetable.logic import get_subjects_name_of_user, get_groups_user_faculty, get_teachers_user_university, \
-    get_students_user_group, get_timetables_user_group, get_all_dates_of_week, \
-    get_name_of_days, get_all_subjects_of_user_teacher, get_subject_of_user, get_subjects_by_timetable, \
-    get_all_subjects_name, get_attendance_user_group, get_all_groups, get_all_teachers
+    get_students_user_group, get_timetables_user_group, get_all_dates_of_week, get_name_of_days, \
+    get_all_subjects_of_user_teacher, get_subject_of_user, get_subjects_by_timetable, get_attendance_user_group
 from timetable.models import Timetable, Profile, Group, SubjectName
 
 MAX_CLASSES_IN_DAY = 5
@@ -22,9 +20,12 @@ class TeacherListView(LoginRequiredMixin, generic.ListView):
     login_url = '/accounts/login/'
 
     def get_queryset(self):
-        if self.request.user.is_superuser or self.request.user.is_staff:
-            return get_all_teachers()
         return get_teachers_user_university(self.request.user)
+
+    def get(self, *args, **kwargs):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return redirect('/admin/')
+        return super(TeacherListView, self).get(*args, **kwargs)
 
 
 class TeacherDetailView(LoginRequiredMixin, generic.DetailView):
@@ -46,9 +47,12 @@ class GroupListView(LoginRequiredMixin, generic.ListView):
     login_url = '/accounts/login/'
 
     def get_queryset(self):
-        if self.request.user.is_superuser or self.request.user.is_staff:
-            return get_all_groups()
         return get_groups_user_faculty(self.request.user)
+
+    def get(self, *args, **kwargs):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return redirect('/admin/')
+        return super(GroupListView, self).get(*args, **kwargs)
 
 
 class GroupDetailView(LoginRequiredMixin, generic.DetailView):
@@ -70,9 +74,12 @@ class SubjectNameListView(LoginRequiredMixin, generic.ListView):
     login_url = '/accounts/login/'
 
     def get_queryset(self):
-        if self.request.user.is_superuser or self.request.user.is_staff:
-            return get_all_subjects_name()
         return get_subjects_name_of_user(self.request.user)
+
+    def get(self, *args, **kwargs):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return redirect('/admin/')
+        return super(SubjectNameListView, self).get(*args, **kwargs)
 
 
 class SubjectNameDetailView(LoginRequiredMixin, generic.DetailView):
@@ -82,7 +89,7 @@ class SubjectNameDetailView(LoginRequiredMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         if self.request.user.is_superuser or self.request.user.is_staff:
-            raise Http404('Доступ запрещен!')
+            raise PermissionDenied()
         context = super().get_context_data(**kwargs)
         context['subjects'] = get_subject_of_user(self.request.user, context['object'])
         return context
@@ -99,6 +106,11 @@ class TimetableListView(LoginRequiredMixin, generic.ListView):
             return []
         return get_timetables_user_group(self.request.user)[::-1]
 
+    def get(self, *args, **kwargs):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return redirect('/admin/')
+        return super(TimetableListView, self).get(*args, **kwargs)
+
 
 class TimetableDetailView(LoginRequiredMixin, generic.DetailView):
     model = Timetable
@@ -107,7 +119,7 @@ class TimetableDetailView(LoginRequiredMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         if self.request.user.is_superuser or self.request.user.is_staff:
-            return self.handle_no_permission()
+            raise PermissionDenied()
         context = super().get_context_data(**kwargs)
         context['timetable_list'] = get_timetables_user_group(self.request.user)[::-1]
         context['students'] = get_students_user_group(self.request.user)
