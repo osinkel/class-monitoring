@@ -3,9 +3,31 @@
 {% block title %}Group's list of user faculty{% endblock %}
 
 {% block content %}
+
 <h3>Группы</h3>
+{% if user.is_superuser %}
+<table border="1" cellpadding="4" cellspacing="0">
+    <tr>
+        <td>id</td>
+        <td>Название</td>
+        <td></td>
+        <td></td>
+    </tr>
+    {% for group in group_list %}
+    <tr>
+        <td>{{group.id}}</td>
+        <td>{{group.name}}</td>
+        <td><a href="{% url 'timetable:group_update' group.id %}">Редактировать</a></td>
+        <td><a href="{% url 'timetable:group_delete' group.id %}">Удалить</a></td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{% url 'timetable:group_create' %}">Добавить</a>
+{% else %}
 {%for group in group_list%}
     <a href="{{group.id}}">{{group.name}}</a>
     <br>
 {%endfor%}
+{% endif%}
+
 {% endblock %}

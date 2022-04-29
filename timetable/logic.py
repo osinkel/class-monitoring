@@ -29,9 +29,17 @@ def get_teachers_user_university(user: User) -> list:
     return Profile.objects.filter(role=AllowedRoles.LECTURER, university=current_profile.university)
 
 
+def get_all_teachers() -> list:
+    return Profile.objects.filter(role=AllowedRoles.LECTURER)
+
+
 def get_groups_user_faculty(user: User) -> list:
     current_profile = get_profile(user)
     return current_profile.faculty.groups.all()
+
+
+def get_all_groups() -> list:
+    return Group.objects.all()
 
 
 def get_students_user_group(user) -> list:

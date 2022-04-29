@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Delete teacher profile{% endblock %}
+
+{% block content %}
+<h3>Удалить профиль преподавателя #{{object.id}}</h3>
+<form method="post">{% csrf_token %}
+    <p>Вы уверены, что хотите удалить профиль преподавателя "{{ object }}"?</p>
+    {{ form }}
+    <input type="submit" value="Удалить">
+</form>
+{% endblock %}
