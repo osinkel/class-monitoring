@@ -23,25 +23,25 @@
     <tr>
         <td>Форма занятий</td>
         {% for subjects_of_day in subjects %}
-        {% for subject in subjects_of_day %}
-        {% if subject != None %}
-        <td><SPAN STYLE="writing-mode: vertical-lr;
-                     -ms-writing-mode: tb-rl;
-                     transform: rotate(180deg);">{{subject.type.name}}</SPAN></td>
-        {% else %}
-        <td></td>
-        {% endif%}
-        {% endfor %}
+            {% for subject in subjects_of_day %}
+                {% if subject != None %}
+                    <td><SPAN STYLE="writing-mode: vertical-lr;-ms-writing-mode: tb-rl;transform: rotate(180deg);">
+                        {{subject.type.name}}</SPAN>
+                    </td>
+                {% else %}
+                    <td></td>
+                {% endif%}
+            {% endfor %}
         {% endfor %}
     </tr>
     <tr>
         <td>Студент/Название</td>
         {% for subjects_of_day in subjects %}
-        {% for subject in subjects_of_day %}
-        <td><SPAN STYLE="writing-mode: vertical-lr;
-                     -ms-writing-mode: tb-rl;
-                     transform: rotate(180deg);">{{subject.name.short_name}}</SPAN></td>
-        {% endfor %}
+            {% for subject in subjects_of_day %}
+                <td><SPAN STYLE="writing-mode: vertical-lr;-ms-writing-mode: tb-rl;transform: rotate(180deg);">
+                    {{subject.name.short_name}}</SPAN>
+                </td>
+            {% endfor %}
         {% endfor %}
    </tr>
     {% for all_students_presence in attendance %}

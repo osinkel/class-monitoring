@@ -16,12 +16,12 @@
     <tr>
         <td>{{subject.id}}</td>
         <td>{{subject.name}}</td>
-        <td><a href="">Редактировать</a></td>
-        <td><a href="">Удалить</a></td>
+        <td><a href="{% url 'timetable:subject_update' subject.id %}">Редактировать</a></td>
+        <td><a href="{% url 'timetable:subject_delete' subject.id %}">Удалить</a></td>
     </tr>
     {% endfor %}
 </table>
-<a href="">Добавить</a>
+<a href="{% url 'timetable:subject_create' %}">Добавить</a>
 {% else %}
 {%for subject in subject_list%}
     <a href="{{subject.id}}">{{subject.name}}</a>

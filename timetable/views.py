@@ -1,6 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views import generic
+
+from timetable.forms import AddSubjectNameForm, UpdateSubjectNameForm
 from timetable.logic import get_subjects_name_of_user, get_groups_user_faculty, get_teachers_user_university, \
     get_students_user_group, get_timetables_user_group, get_all_dates_of_week, \
     get_name_of_days, get_all_subjects_of_user_teacher, get_subject_of_user, get_subjects_by_timetable, \
@@ -76,8 +78,24 @@ class SubjectNameDetailView(LoginRequiredMixin, generic.DetailView):
         return context
 
 
-class SubjectNameCreateView(LoginRequiredMixin, generic.DetailView):
+class SubjectNameCreateView(LoginRequiredMixin, generic.CreateView):
+    template_name = 'subjects/subject_create_form.html'
     model = SubjectName
+    form_class = AddSubjectNameForm
+    success_url = '/timetable/subjects'
+
+
+class SubjectNameDeleteView(LoginRequiredMixin, generic.DeleteView):
+    template_name = 'subjects/subject_confirm_delete.html'
+    model = SubjectName
+    success_url = '/timetable/subjects'
+
+
+class SubjectNameUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'subjects/subject_update_form.html'
+    model = SubjectName
+    form_class = UpdateSubjectNameForm
+    success_url = '/timetable/subjects'
 
 
 class TimetableListView(LoginRequiredMixin, generic.ListView):

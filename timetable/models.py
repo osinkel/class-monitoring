@@ -81,7 +81,7 @@ class Lecturer(models.Model):
 class SubjectName(models.Model):
     name = models.CharField('название', max_length=255)
     short_name = models.CharField('сокращенное название', max_length=50)
-    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE, verbose_name='факультет')
 
     class Meta:
         ordering = ['name']
