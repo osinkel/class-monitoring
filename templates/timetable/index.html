@@ -4,7 +4,11 @@
 
 {% block content %}
 <h3>Посещаемость</h3>
+{% if user.is_superuser %}
+<h4>Здравствуйте, администартор!</h4>
+{% else %}
 {% for timetable in timetable_list%}
 <a href="{{timetable.id}}">{{timetable.date}}</a>
 {% endfor %}
+{% endif %}
 {% endblock %}

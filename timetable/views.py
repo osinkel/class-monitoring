@@ -2,8 +2,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views import generic
 from timetable.logic import get_subjects_name_of_user, get_groups_user_faculty, get_teachers_user_university, \
-    get_students_user_group, get_timetables_user_group, get_attendance_user_group_by_date, get_all_dates_of_week,\
-    get_name_of_days, get_all_subjects_of_user_teacher, get_subject_of_user, get_subjects_by_timetable
+    get_students_user_group, get_timetables_user_group, get_all_dates_of_week, \
+    get_name_of_days, get_all_subjects_of_user_teacher, get_subject_of_user, get_subjects_by_timetable, \
+    get_all_subjects_name, get_attendance_user_group
 from timetable.models import Timetable, Profile, Group, SubjectName
 
 MAX_CLASSES_IN_DAY = 5
@@ -53,16 +54,18 @@ class GroupDetailView(LoginRequiredMixin, generic.DetailView):
         return context
 
 
-class SubjectListView(LoginRequiredMixin, generic.ListView):
+class SubjectNameListView(LoginRequiredMixin, generic.ListView):
     template_name = 'subjects/subject_list.html'
     context_object_name = 'subject_list'
     login_url = '/accounts/login/'
 
     def get_queryset(self):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return get_all_subjects_name()
         return get_subjects_name_of_user(self.request.user)
 
 
-class SubjectDetailView(LoginRequiredMixin, generic.DetailView):
+class SubjectNameDetailView(LoginRequiredMixin, generic.DetailView):
     template_name = 'subjects/subject_detail.html'
     login_url = '/accounts/login/'
     model = SubjectName
@@ -73,12 +76,19 @@ class SubjectDetailView(LoginRequiredMixin, generic.DetailView):
         return context
 
 
+class SubjectNameCreateView(LoginRequiredMixin, generic.DetailView):
+    model = SubjectName
+
+
 class TimetableListView(LoginRequiredMixin, generic.ListView):
     template_name = 'timetable/index.html'
     context_object_name = 'timetable_list'
     login_url = '/accounts/login/'
+    permission_required = 'timetable.view_timetable'
 
     def get_queryset(self):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return []
         return get_timetables_user_group(self.request.user)[::-1]
 
 
@@ -88,14 +98,16 @@ class TimetableDetailView(LoginRequiredMixin, generic.DetailView):
     login_url = '/accounts/login/'
 
     def get_context_data(self, **kwargs):
+        if self.request.user.is_superuser or self.request.user.is_staff:
+            return self.handle_no_permission()
         context = super().get_context_data(**kwargs)
         context['timetable_list'] = get_timetables_user_group(self.request.user)[::-1]
         context['students'] = get_students_user_group(self.request.user)
         context['days'] = get_all_dates_of_week(context['object'])
         context['days_name'] = get_name_of_days(context['object'])
         context['subjects'] = get_subjects_by_timetable(context['object'], MAX_CLASSES_IN_DAY)
-        context['attendance'] = get_attendance_user_group_by_date(context['students'],
-                                                                  context['subjects'],
-                                                                  max_classes_in_day=MAX_CLASSES_IN_DAY)
+        context['attendance'] = get_attendance_user_group(context['students'],
+                                                          context['subjects'],
+                                                          max_classes_in_day=MAX_CLASSES_IN_DAY)
         context['max_classes_in_day'] = MAX_CLASSES_IN_DAY
         return context

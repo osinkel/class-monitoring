@@ -4,8 +4,28 @@
 
 {% block content %}
 <h3>Предметы</h3>
+{% if user.is_superuser %}
+<table border="1" cellpadding="4" cellspacing="0">
+    <tr>
+        <td>id</td>
+        <td>Название</td>
+        <td></td>
+        <td></td>
+    </tr>
+    {% for subject in subject_list %}
+    <tr>
+        <td>{{subject.id}}</td>
+        <td>{{subject.name}}</td>
+        <td><a href="">Редактировать</a></td>
+        <td><a href="">Удалить</a></td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="">Добавить</a>
+{% else %}
 {%for subject in subject_list%}
     <a href="{{subject.id}}">{{subject.name}}</a>
     <br>
 {%endfor%}
+{% endif%}
 {% endblock %}
