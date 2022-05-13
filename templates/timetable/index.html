@@ -4,11 +4,15 @@
 
 {% block content %}
 <h3>Посещаемость</h3>
-{% if user.is_superuser %}
-<h4>Здравствуйте, администартор!</h4>
-{% else %}
-{% for timetable in timetable_list%}
-<a href="{{timetable.id}}">{{timetable.date}}</a>
-{% endfor %}
-{% endif %}
+<div class="weeks">
+    {% for timetable in timetable_list%}
+    <a href="{{timetable.id}}" id="{{timetable.id}}" class="timetable-week">{{timetable.date}}</a>
+    {% endfor %}
+</div>
+<button class="add-week-btn">Добавить неделю</button>
+{% endblock %}
+
+{% block script %}
+    {% load static %}
+    <script src="{% static 'js/timetable.js' %}"></script>
 {% endblock %}

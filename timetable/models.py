@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from class_monitoring import settings
+
 
 class AllowedRoles(models.TextChoices):
     """All possible roles in system.

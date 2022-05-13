@@ -3,10 +3,16 @@
 {% block title %}User group attendance{% endblock %}
 
 {% block content %}
+{{object.id}}
 <h3>Посещаемость</h3>
-{% for timetable in timetable_list%}
-<a href="{{timetable.id}}">{{timetable.date}}</a>
-{% endfor %}
+<div class="weeks">
+    {% for timetable in timetable_list%}
+    <a href="{{timetable.id}}" id="{{timetable.id}}" class="timetable-week">{{timetable.date}}</a>
+    {% endfor %}
+</div>
+{% csrf_token %}
+<button class="add-week-btn">Добавить неделю</button>
+<button class="add-subject-btn">Добавить предмет</button>
 <table border="1" cellpadding="4" cellspacing="0">
     <tr>
         <td>Дни недели</td>
@@ -38,20 +44,42 @@
         <td>Студент/Название</td>
         {% for subjects_of_day in subjects %}
             {% for subject in subjects_of_day %}
-                <td><SPAN STYLE="writing-mode: vertical-lr;-ms-writing-mode: tb-rl;transform: rotate(180deg);">
-                    {{subject.name.short_name}}</SPAN>
-                </td>
+                {% if subject.name.short_name != None %}
+                    <td><SPAN STYLE="writing-mode: vertical-lr;-ms-writing-mode: tb-rl;transform: rotate(180deg);">
+                        {{subject.name.short_name}}</SPAN>
+                    </td>
+                {% else %}
+                    <td></td>
+                {% endif %}
+
             {% endfor %}
         {% endfor %}
    </tr>
     {% for all_students_presence in attendance %}
     <tr>
         {% for student_presence in all_students_presence %}
-        <td>{{student_presence}}</td>
+            {% if student_presence != None %}
+                <td>{{student_presence}}</td>
+            {% else %}
+                <td></td>
+            {% endif %}
         {% endfor %}
     </tr>
     {% endfor %}
   </table>
+
+<div id="myModal" class="modal">
+
+  <div class="modal-content">
+    <span class="close">&times;</span>
+      <form method="post" action="{% url 'timetable:timetable_subject_create' 53 %}">
+        {% csrf_token %}
+        {{subject_form.as_p}}
+        <input type="submit" value="Добавить">
+      </form>
+  </div>
+
+</div>
 {% endblock %}
 
 {% block script %}

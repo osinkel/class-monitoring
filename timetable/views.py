@@ -1,10 +1,18 @@
+import datetime
+import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views import generic
+
+from timetable.forms import AddSubjectForm
 from timetable.logic import get_subjects_name_of_user, get_groups_user_faculty, get_teachers_user_university, \
     get_students_user_group, get_timetables_user_group, get_all_dates_of_week, get_name_of_days, \
-    get_all_subjects_of_user_teacher, get_subject_of_user, get_subjects_by_timetable, get_attendance_user_group
+    get_all_subjects_of_user_teacher, get_subject_of_user, get_subjects_by_timetable, get_attendance_user_group, \
+    create_timetable_for_group, get_timetable_by_id, create_subject_form, \
+    create_subject_for_timetable
 from timetable.models import Timetable, Profile, Group, SubjectName
 
 MAX_CLASSES_IN_DAY = 5
@@ -99,7 +107,6 @@ class TimetableListView(LoginRequiredMixin, generic.ListView):
     template_name = 'timetable/index.html'
     context_object_name = 'timetable_list'
     login_url = '/accounts/login/'
-    permission_required = 'timetable.view_timetable'
 
     def get_queryset(self):
         if self.request.user.is_superuser or self.request.user.is_staff:
@@ -130,4 +137,37 @@ class TimetableDetailView(LoginRequiredMixin, generic.DetailView):
                                                           context['subjects'],
                                                           max_classes_in_day=MAX_CLASSES_IN_DAY)
         context['max_classes_in_day'] = MAX_CLASSES_IN_DAY
+        context['subject_form'] = create_subject_form(self.request.user, context['object'].id)
         return context
+
+
+def is_ajax(request):
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
+
+def create_timetable(request):
+    if is_ajax(request):
+        if request.method == 'POST':
+            json_data = json.loads(request.body.decode("utf-8"))
+            try:
+                timetable_id = int(json_data['id'])
+            except KeyError as exc:
+                return {'status': 'failed', 'error': exc}
+            day = get_timetable_by_id(timetable_id).date + datetime.timedelta(days=7)
+            try:
+                new_timetable = create_timetable_for_group(request.user, day)
+            except:
+                return {'status': 'error'}
+            return JsonResponse({'status': 'success', 'id': new_timetable.id, 'date': new_timetable.date})
+
+
+def timetable_create_subject(request, timetable_id):
+
+    if request.method == 'POST':
+
+        form = AddSubjectForm(request.POST)
+
+        if form.is_valid():
+            create_subject_for_timetable(form.cleaned_data)
+
+    return HttpResponseRedirect(reverse('timetable:timetable_detail', args=(timetable_id,)))

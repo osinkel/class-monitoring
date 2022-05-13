@@ -2,7 +2,8 @@ import datetime
 
 from django.contrib.auth.models import User
 
-from timetable.models import Profile, SubjectName, AllowedRoles, Timetable, Subject, Group
+from timetable.forms import AddSubjectForm
+from timetable.models import Profile, SubjectName, AllowedRoles, Timetable, Subject, Group, SubjectType, SubjectTime
 
 
 def get_profile(user: User) -> Profile:
@@ -42,6 +43,10 @@ def get_students_user_group(user) -> list:
 def get_timetables_user_group(user: User) -> list:
     current_profile = get_profile(user)
     return Timetable.objects.filter(group=current_profile.group)
+
+
+def get_timetable_by_id(id: int) -> Timetable:
+    return Timetable.objects.get(pk=id)
 
 
 def get_subjects_user_group(user: User) -> list:
@@ -93,9 +98,9 @@ def get_student_attendance_of_one_day(student: Profile, subjects: list[Subject |
                 else:
                     attendance_one_student_day.append("н")
             else:
-                attendance_one_student_day.append(' ')
+                attendance_one_student_day.append(None)
         else:
-            attendance_one_student_day.append(' ')
+            attendance_one_student_day.append(None)
 
     return attendance_one_student_day
 
@@ -126,3 +131,39 @@ def get_name_of_days(week: Timetable) -> list:
 def get_all_subjects_of_user_teacher(current_user: User, teacher_profile: Profile) -> list:
     current_profile = get_profile(current_user)
     return Subject.objects.filter(teacher=teacher_profile, group=current_profile.group)
+
+
+def is_day_monday(day) -> bool:
+    if day.strftime("%A") == 'Monday':
+        return True
+    return False
+
+
+def create_timetable_for_group(user: User, date) -> Timetable | ValueError:
+    current_profile = get_profile(user)
+    if current_profile.role == AllowedRoles.PRESIDENT:
+        timetable = Timetable(group=current_profile.group, date=date)
+        timetable.save()
+        return timetable
+    return ValueError("Profile should has president role!")
+
+
+def create_subject_form(user: User, timetable_id: int) -> AddSubjectForm:
+    current_profile = get_profile(user)
+    subject_form = AddSubjectForm()
+    subject_form.fields['group'].initial = current_profile.group.id
+    subject_form.fields['teacher'].initial = Profile.objects.filter(role=AllowedRoles.LECTURER, university=current_profile.university)
+    subject_form.fields['timetable'].initial = timetable_id
+    return subject_form
+
+
+def create_subject_for_timetable(data: dict) -> Subject:
+    subject = Subject(name=data['name'], type=data['type'],
+                      time=data['time'],
+                      date=data['date'], teacher=data['teacher'], group=Group.objects.get(pk=data['group']),
+                      timetable=Timetable.objects.get(pk=data['timetable']))
+    subject.save()
+
+    return subject
+
+
