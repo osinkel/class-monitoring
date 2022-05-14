@@ -55,8 +55,10 @@ def get_subjects_user_group(user: User) -> list:
 
 
 def get_subjects_by_timetable(timetable: Timetable, max_classes_in_day: int) -> list:
-    subjects = Subject.objects.filter(timetable=timetable)[:max_classes_in_day]
+    subjects = Subject.objects.filter(timetable=timetable)
     prepared_subjects_for_timetable = []
+    print(timetable)
+    print(subjects)
 
     for date in get_all_dates_of_week(timetable):
         prepared_subjects_for_timetable.append(fill_day_by_subjects(date, subjects, max_classes_in_day))
@@ -139,13 +141,16 @@ def is_day_monday(day) -> bool:
     return False
 
 
-def create_timetable_for_group(user: User, date) -> Timetable | ValueError:
+def create_timetable_for_group(user: User, date) -> Timetable | ValueError | None:
+    if date > datetime.date.today():
+        raise ValueError("The start date of the new week mustn't be later than the current one!")
+
     current_profile = get_profile(user)
     if current_profile.role == AllowedRoles.PRESIDENT:
         timetable = Timetable(group=current_profile.group, date=date)
         timetable.save()
         return timetable
-    return ValueError("Profile should has president role!")
+    raise ValueError("Profile should has president role!")
 
 
 def create_subject_form(user: User, timetable_id: int) -> AddSubjectForm:
@@ -157,11 +162,22 @@ def create_subject_form(user: User, timetable_id: int) -> AddSubjectForm:
     return subject_form
 
 
-def create_subject_for_timetable(data: dict) -> Subject:
+def create_subject_for_timetable(data: dict) -> Subject | None:
+
+    if data['date'].strftime("%A") == 'Sunday':
+        return
+
+    monday = data['date'] - datetime.timedelta(days=data['date'].weekday())
+
+    try:
+        timetable_for_subj = Timetable.objects.filter(date=monday)[0]
+    except IndexError:
+        return
+
     subject = Subject(name=data['name'], type=data['type'],
                       time=data['time'],
                       date=data['date'], teacher=data['teacher'], group=Group.objects.get(pk=data['group']),
-                      timetable=Timetable.objects.get(pk=data['timetable']))
+                      timetable=timetable_for_subj)
     subject.save()
 
     return subject

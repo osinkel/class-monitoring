@@ -12,6 +12,8 @@ urlpatterns = [
     path('subjects/<int:pk>', views.SubjectNameDetailView.as_view(), name='subject_detail'),
     path('<int:pk>', views.TimetableDetailView.as_view(), name='timetable_detail'),
     path('<int:timetable_id>/create_subject', views.timetable_create_subject, name='timetable_subject_create'),
+    path('get_subject', views.timetable_get_subject, name='timetable_get_subject'),
+    path('delete_subject', views.timetable_delete_subject, name='timetable_delete_subject'),
     path('create', views.create_timetable, name='timetable_create'),
     path('', views.TimetableListView.as_view(), name='timetable')
 ]

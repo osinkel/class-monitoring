@@ -30,8 +30,17 @@
 }
 
 .close:hover,
-.close:focus {
+.close:focus,
+.del-subject-btn:hover,
+.del-subject-btn:focus{
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+
+.del-subject-btn {
+  color: #aaa;
+  float: right;
+  font-size: 14px;
+  font-weight: bold;
 }

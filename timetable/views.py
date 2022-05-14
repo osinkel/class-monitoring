@@ -1,19 +1,20 @@
 import datetime
 import json
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
-from django.http import JsonResponse, HttpResponseRedirect
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.http import JsonResponse, HttpResponseRedirect, QueryDict
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import generic
 
+import timetable
 from timetable.forms import AddSubjectForm
 from timetable.logic import get_subjects_name_of_user, get_groups_user_faculty, get_teachers_user_university, \
     get_students_user_group, get_timetables_user_group, get_all_dates_of_week, get_name_of_days, \
     get_all_subjects_of_user_teacher, get_subject_of_user, get_subjects_by_timetable, get_attendance_user_group, \
     create_timetable_for_group, get_timetable_by_id, create_subject_form, \
     create_subject_for_timetable
-from timetable.models import Timetable, Profile, Group, SubjectName
+from timetable.models import Timetable, Profile, Group, SubjectName, Subject
 
 MAX_CLASSES_IN_DAY = 5
 
@@ -152,13 +153,44 @@ def create_timetable(request):
             try:
                 timetable_id = int(json_data['id'])
             except KeyError as exc:
-                return {'status': 'failed', 'error': exc}
+                return JsonResponse({'status': 'failed', 'error': exc})
             day = get_timetable_by_id(timetable_id).date + datetime.timedelta(days=7)
             try:
                 new_timetable = create_timetable_for_group(request.user, day)
             except:
-                return {'status': 'error'}
+                return JsonResponse({'status': 'error'})
             return JsonResponse({'status': 'success', 'id': new_timetable.id, 'date': new_timetable.date})
+
+
+def timetable_get_subject(request):
+    if is_ajax(request):
+        if request.method == 'GET':
+            try:
+                subject = Subject.objects.get(pk=request.GET.get('id', 0))
+            except:
+                return JsonResponse({'status': 'error'})
+            return JsonResponse({
+                'status': 'success',
+                'name': subject.name.name,
+                'short_name': subject.name.short_name,
+                'type': subject.type.name,
+                'date': subject.date,
+                'time': subject.time.time,
+            })
+
+
+def timetable_delete_subject(request):
+    print(101)
+    if is_ajax(request):
+        if request.method == 'GET':
+            try:
+                subject = Subject.objects.get(pk=request.GET.get('id', 0))
+                subject.delete()
+            except ObjectDoesNotExist as exc:
+                return JsonResponse({'status': 'error', 'msg': str(exc)})
+            return JsonResponse({
+                'status': 'success',
+            })
 
 
 def timetable_create_subject(request, timetable_id):
@@ -166,7 +198,6 @@ def timetable_create_subject(request, timetable_id):
     if request.method == 'POST':
 
         form = AddSubjectForm(request.POST)
-
         if form.is_valid():
             create_subject_for_timetable(form.cleaned_data)
 
