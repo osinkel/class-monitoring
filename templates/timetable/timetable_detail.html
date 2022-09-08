@@ -45,7 +45,8 @@
             {% for subject in subjects_of_day %}
                 {% if subject.name.short_name != None %}
                     <td><SPAN STYLE="writing-mode: vertical-lr;-ms-writing-mode: tb-rl;transform: rotate(180deg);">
-                        {{subject.name.short_name}}<span class="del-subject-btn" id="{{subject.id}}">&times;</span></SPAN>
+                        <span><a href="{%url 'timetable:subject_update' subject.id%}?next={% url 'timetable:timetable_detail' object.id %}">{{subject.name.short_name}}</a></span>
+                        <span class="del-subject-btn" id="{{subject.id}}">&times;</span></SPAN>
                     </td>
                 {% else %}
                     <td></td>
@@ -73,7 +74,7 @@
     <span class="close">&times;</span>
       <form method="post" action="{% url 'timetable:timetable_subject_create' object.id %}">
         {% csrf_token %}
-        {{subject_form.as_p}}
+        {{subject_create_form.as_p}}
         <input type="submit" value="Добавить">
       </form>
   </div>

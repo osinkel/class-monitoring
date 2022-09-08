@@ -3,7 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 
 from timetable.forms import AddSubjectForm
-from timetable.models import Profile, SubjectName, AllowedRoles, Timetable, Subject, Group, SubjectType, SubjectTime
+from timetable.models import Profile, SubjectName, AllowedRoles, Timetable, Subject, Group
 
 
 def get_profile(user: User) -> Profile:
@@ -57,8 +57,6 @@ def get_subjects_user_group(user: User) -> list:
 def get_subjects_by_timetable(timetable: Timetable, max_classes_in_day: int) -> list:
     subjects = Subject.objects.filter(timetable=timetable)
     prepared_subjects_for_timetable = []
-    print(timetable)
-    print(subjects)
 
     for date in get_all_dates_of_week(timetable):
         prepared_subjects_for_timetable.append(fill_day_by_subjects(date, subjects, max_classes_in_day))
@@ -142,8 +140,8 @@ def is_day_monday(day) -> bool:
 
 
 def create_timetable_for_group(user: User, date) -> Timetable | ValueError | None:
-    if date > datetime.date.today():
-        raise ValueError("The start date of the new week mustn't be later than the current one!")
+
+    check_date(date)
 
     current_profile = get_profile(user)
     if current_profile.role == AllowedRoles.PRESIDENT:
@@ -153,7 +151,7 @@ def create_timetable_for_group(user: User, date) -> Timetable | ValueError | Non
     raise ValueError("Profile should has president role!")
 
 
-def create_subject_form(user: User, timetable_id: int) -> AddSubjectForm:
+def do_subject_create_form(user: User, timetable_id: int) -> AddSubjectForm:
     current_profile = get_profile(user)
     subject_form = AddSubjectForm()
     subject_form.fields['group'].initial = current_profile.group.id
@@ -162,10 +160,17 @@ def create_subject_form(user: User, timetable_id: int) -> AddSubjectForm:
     return subject_form
 
 
+def check_date(date: datetime) -> None:
+    if date.strftime("%A") == 'Sunday':
+        raise ValueError("The day of choosed date can't be Sunday")
+
+    if date > datetime.date.today():
+        raise ValueError("The start date of the new week mustn't be later than the current one!")
+
+
 def create_subject_for_timetable(data: dict) -> Subject | None:
 
-    if data['date'].strftime("%A") == 'Sunday':
-        return
+    check_date(data['date'])
 
     monday = data['date'] - datetime.timedelta(days=data['date'].weekday())
 

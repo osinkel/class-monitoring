@@ -1,19 +1,19 @@
 import datetime
 import json
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
-from django.http import JsonResponse, HttpResponseRedirect, QueryDict
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import generic
 
-import timetable
-from timetable.forms import AddSubjectForm
+from timetable.forms import AddSubjectForm, UpdateSubjectForm
 from timetable.logic import get_subjects_name_of_user, get_groups_user_faculty, get_teachers_user_university, \
     get_students_user_group, get_timetables_user_group, get_all_dates_of_week, get_name_of_days, \
     get_all_subjects_of_user_teacher, get_subject_of_user, get_subjects_by_timetable, get_attendance_user_group, \
-    create_timetable_for_group, get_timetable_by_id, create_subject_form, \
-    create_subject_for_timetable
+    create_timetable_for_group, get_timetable_by_id, \
+    create_subject_for_timetable, do_subject_create_form
 from timetable.models import Timetable, Profile, Group, SubjectName, Subject
 
 MAX_CLASSES_IN_DAY = 5
@@ -129,17 +129,25 @@ class TimetableDetailView(LoginRequiredMixin, generic.DetailView):
         if self.request.user.is_superuser or self.request.user.is_staff:
             raise PermissionDenied()
         context = super().get_context_data(**kwargs)
-        context['timetable_list'] = get_timetables_user_group(self.request.user)[::-1]
-        context['students'] = get_students_user_group(self.request.user)
-        context['days'] = get_all_dates_of_week(context['object'])
-        context['days_name'] = get_name_of_days(context['object'])
-        context['subjects'] = get_subjects_by_timetable(context['object'], MAX_CLASSES_IN_DAY)
-        context['attendance'] = get_attendance_user_group(context['students'],
-                                                          context['subjects'],
-                                                          max_classes_in_day=MAX_CLASSES_IN_DAY)
-        context['max_classes_in_day'] = MAX_CLASSES_IN_DAY
-        context['subject_form'] = create_subject_form(self.request.user, context['object'].id)
+        context = context_for_timetable_detail_view(self.request.user, context['object'], context=context)
         return context
+
+
+def context_for_timetable_detail_view(user: User, timetable: Timetable, context: dict = None):
+    if context is None:
+        context = dict()
+        context['object'] = timetable
+    context['timetable_list'] = get_timetables_user_group(user)[::-1]
+    context['students'] = get_students_user_group(user)
+    context['days'] = get_all_dates_of_week(context['object'])
+    context['days_name'] = get_name_of_days(context['object'])
+    context['subjects'] = get_subjects_by_timetable(context['object'], MAX_CLASSES_IN_DAY)
+    context['attendance'] = get_attendance_user_group(context['students'],
+                                                      context['subjects'],
+                                                      max_classes_in_day=MAX_CLASSES_IN_DAY)
+    context['max_classes_in_day'] = MAX_CLASSES_IN_DAY
+    context['subject_create_form'] = do_subject_create_form(user, context['object'].id)
+    return context
 
 
 def is_ajax(request):
@@ -180,7 +188,6 @@ def timetable_get_subject(request):
 
 
 def timetable_delete_subject(request):
-    print(101)
     if is_ajax(request):
         if request.method == 'GET':
             try:
@@ -194,11 +201,39 @@ def timetable_delete_subject(request):
 
 
 def timetable_create_subject(request, timetable_id):
-
     if request.method == 'POST':
 
         form = AddSubjectForm(request.POST)
         if form.is_valid():
-            create_subject_for_timetable(form.cleaned_data)
+            try:
+                create_subject_for_timetable(form.cleaned_data)
+            except ValueError as exc:
+                print(exc)
 
     return HttpResponseRedirect(reverse('timetable:timetable_detail', args=(timetable_id,)))
+
+
+class SubjectUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = 'subjects/subject_update_form.html'
+    model = Subject
+    form_class = UpdateSubjectForm
+
+    def get_form_kwargs(self, **kwargs):
+        kwargs = super(SubjectUpdateView, self).get_form_kwargs()
+        redirect = self.request.GET.get('next')
+        if redirect:
+            if 'initial' in kwargs.keys():
+                kwargs['initial'].update({'next': redirect})
+            else:
+                kwargs['initial'] = {'next': redirect}
+        return kwargs
+
+    def form_invalid(self, form):
+        return super(SubjectUpdateView, self).form_invalid(form)
+
+    def form_valid(self, form):
+        print(form.cleaned_data.get('date'), type(form.cleaned_data.get('date')))
+        redirect = form.cleaned_data.get('next')
+        if redirect:
+            self.success_url = redirect
+        return super(SubjectUpdateView, self).form_valid(form)

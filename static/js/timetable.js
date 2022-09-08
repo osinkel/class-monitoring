@@ -84,6 +84,27 @@ function getModal(id_modal){
     return modal
 }
 
+function edit_subject(){
+    subject_id = this.id
+
+        $.ajax({
+        url: 'edit_subject',
+        method: 'GET',
+        data: {'id':  subject_id},
+        dataType: 'json',
+        success: function(response) {
+            console.log('success!');
+            var modal = getModal('editModal');
+            modal.style.display = "block";
+        },
+        error: function(response){
+            console.log('error!');
+            var modal = getModal('editModal');
+            modal.style.display = "block";
+        }
+    });
+
+}
 
 function del_subject(){
     subject_id = this.id
@@ -115,10 +136,16 @@ function del_subject(){
 let add_week_btn = document.querySelector('.add-week-btn');
 let add_subject_btn = document.querySelector('.add-subject-btn');
 let del_subject_btns = document.querySelectorAll('.del-subject-btn');
+let edit_subject_btns = document.querySelectorAll('.edit-subject-btn');
 var i;
 for(i=0; i< del_subject_btns.length; i++){
     del_subject_btns[i].addEventListener('click', del_subject);
 }
+
+for(i=0; i< edit_subject_btns.length; i++){
+    edit_subject_btns[i].addEventListener('click', edit_subject);
+}
+
 add_week_btn.addEventListener('click', add_new_week);
 add_subject_btn.addEventListener('click', add_new_subject);
 

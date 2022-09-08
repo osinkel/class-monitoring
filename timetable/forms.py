@@ -1,15 +1,13 @@
 import datetime
 
 from django import forms
-from django.core.exceptions import ValidationError
-from timetable.models import Subject, Profile, AllowedRoles, Timetable
+from timetable.models import Subject, Profile, AllowedRoles
 
 
 class AddSubjectForm(forms.ModelForm):
+
     group = forms.IntegerField(widget=forms.HiddenInput())
-
     teacher = forms.ModelChoiceField(queryset=Profile.objects.filter(role=AllowedRoles.LECTURER))
-
     timetable = forms.IntegerField(widget=forms.HiddenInput())
 
     class Meta:
@@ -23,3 +21,12 @@ class AddSubjectForm(forms.ModelForm):
                 'max': datetime.date.today()
             })
         }
+
+
+class UpdateSubjectForm(forms.ModelForm):
+    next = forms.CharField(required=False, widget=forms.HiddenInput())
+    teacher = forms.ModelChoiceField(queryset=Profile.objects.filter(role=AllowedRoles.LECTURER))
+
+    class Meta:
+        model = Subject
+        fields = ('name', 'type', 'time', 'date', 'teacher')
